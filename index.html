@@ -1,0 +1,914 @@
+<!DOCTYPE html> 
+<html> 
+    <head> 
+    <title>Javascript RPN Calculator JQM by Andy</title>
+    <meta charset="utf-8">  
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">  
+    
+    <!-- allow fullscreen web-app on iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <!-- scale this app to fill the available width on supported devices -->
+    <meta name="viewport" content="minimum-scale=0.1, maximum-scale=2.0, width=device-width, user-scalable=no">
+    <!-- Icon (Retina) -->
+    <link rel="apple-touch-icon" sizes="144x144" href="assets/jsrpncalc2.png">
+
+    <!--JQUERY MOBILE THEME - hmm - minified version of custom theme has bad down state when run in web app mode on iphone 4s !? -->
+    <!--<link rel="stylesheet" href="jqmgui/css/themes/jqm_darkyellow_e.min.css" />-->
+    <link rel="stylesheet" href="jqmgui/css/themes/jqm_darkyellow_e.css" />
+    <link rel="stylesheet" href="jqmgui/css/jquery.mobile.structure-1.2.0.min.css" />
+
+    <!--JQUERY MOBILE DEFAULT THEME (comment this out when using custom theme)-->
+    <!--<link rel="stylesheet" href="jqmgui/css/jquery.mobile-1.2.0.css">-->
+
+    <!-- ANDY css styles -->
+    <!-- <link rel="stylesheet" type="text/css" href="styles/normalize.css"> -->
+    <!--<link rel="stylesheet" type="text/css" href="styles/style1.css">-->
+    <link rel="stylesheet" href="jqmgui/css/jqmcalc1.css">
+  
+     <!--This speedup of normal click binding works. https://github.com/ftlabs/fastclick -->
+    <script type='application/javascript' src='jqmgui/scripts/fastclick.ftlabs.js'></script>
+    <script type='application/javascript'>
+        window.addEventListener('load', function() {
+            new FastClick(document.body);
+        }, false);      
+    </script>
+
+    <!--JQUERY-->
+    <script type="text/javascript" src="scripts/other/jquery-1.8.3.min.js"></script>
+    <!--<script type="text/javascript" src="scripts/other/jquery-1.7.2.min.js"></script>-->
+    
+    <!--JQUERY UI-->
+    <!-- jQuery UI - styles not included since I have my own. -->
+    <!-- -->
+    <!--This is only used for the draggable behaviour in the Demo8 graphics demo.  Raises the-->
+    <!--question re how do we include external libraries within the calc.-->
+    <!-- -->
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" /> -->
+    <!--<script type="text/javascript" src="scripts/other/jquery-ui.1.8.18.min.js"></script>-->
+    <script type="text/javascript" src="scripts/other/jquery-ui-1.9.2.custom.min.js"></script>
+
+    <!--JQUERY MOBILE-->
+    <script type="text/javascript" src="jqmgui/scripts/jquery.mobile.config.andy.js"></script>
+    <script type="text/javascript" src="jqmgui/scripts/jquery.mobile-1.2.0.min.js"></script>
+
+    <!-- DB -->
+    <script type='text/javascript' src="scripts/other/taffy.js"></script>
+
+    <!-- ANDY -->
+    <script type='text/javascript' src="scripts/persist.js"></script>
+    <script type='text/javascript' src="scripts/rpnstack.js"></script>
+    <script type='text/javascript' src="scripts/logger.js"></script>
+    <script type="text/javascript" src="jqmgui/scripts/main.js"></script>
+
+    <!-- jQuery JSON - not already included in Jquery?  Have to include this special one? -->
+    <script type='text/javascript' src="scripts/other/jquery.json.min.js"></script>
+
+    <!-- iosSlider plugin http://iosscripts.com/iosslider/ -->
+    <script src = "scripts/other/jquery.iosslider.min.js"></script>
+
+    <!-- Canvas graphics library -->
+    <script type='text/javascript' src="scripts/other/blueSparrow.js"></script>
+    <script type='text/javascript' src="scripts/canvas_demos.js"></script>
+
+    <!-- Javascript parsing -->
+    <script type='text/javascript' src="scripts/other/esprima.js"></script>
+    <script type='text/javascript' src="scripts/jsparser.js"></script>
+    <script type='text/javascript' src="scripts/custom_button_mgr.js"></script>
+    
+    <!-- Syntax Highlighting -->
+    <!-- ver 2.3 -->
+    <script type='text/javascript' src="scripts/other/codemirror-2.34/codemirror.js"></script>
+    <link rel="stylesheet" type="text/css" href="scripts/other/codemirror-2.34/codemirror.css">
+    <script type='text/javascript' src="scripts/other/codemirror-2.34/codemirror.javascript.js"></script>
+    <!-- ver 3 -->
+    <!--<script type='text/javascript' src="scripts/other/codemirror-3.0/codemirror.js"></script>-->
+    <!--<link rel="stylesheet" type="text/css" href="scripts/other/codemirror-3.0/codemirror.css">-->
+    <!--<script type='text/javascript' src="scripts/other/codemirror-3.0/codemirror.javascript.js"></script>-->
+    
+    <!-- Better IDE editing experience - Behave http://jakiestfu.github.com/Behave.js/ -->
+    <script type='text/javascript' src="scripts/other/behave.js"></script>
+    
+    <!-- Util -->
+    <script type='text/javascript' src="scripts/other/underscore-min.js"></script>
+    <script type='text/javascript' src="scripts/other/jquery.dblclick.andy.js"></script>
+
+    <!-- Sound -->
+    <script src="scripts/clicksound.js"></script>
+
+    <!-- Phonegap - need for device features (not being accessed) and also for the console.log to be remapped to xcode console -->
+    <script src="cordova-2.3.0.js"></script>
+    
+</head> 
+<body>
+
+<div data-role="page" id="p0" data-dom-cache="true"> 
+    <div  data-role="content" data-theme="a">
+
+    <div class = 'iosSlider0'>
+        <div class = 'slider'>
+
+            <div class="item topcalc" id = 'topcalc'>
+                <ul id="rpnstack2">
+                </ul>
+                <input id="current" data-type="search" class="cmd_input" type="text" value=""></<input>    
+            </div>
+
+            <div class="item" data-mini="true" id="calc_log1">
+                <label style="font-size:0.7em;">Log 1:</label>
+                <textarea name="textarea" id="log1"></textarea>
+            </div>
+
+            <div class="item" id="canvas1">
+                <canvas id="myCanvas" width="312" height="125" style="background:#ebebeb"></canvas>
+            </div>  
+        </div>
+        <div class = 'iosSliderButtons0'>
+                <div class = 'button'></div>
+                <div class = 'button'></div>
+                <div class = 'button'></div>
+        </div>
+    </div>
+
+    <div class = 'iosSlider'>
+        <div class = 'slider'>
+        
+            <div class = 'item' id = 'customKeysPage1'>
+            </div>
+
+            <div class = 'item' id = 'customKeysPage2'>
+            </div>
+
+            <div class = 'item' id = 'customKeysPage3'>
+            </div>
+            
+            <div class = 'item' id = 'customKeysPage4'>
+            </div>
+
+        </div>
+        <div class = 'iosSliderButtons'>
+                <div class = 'button'></div>
+                <div class = 'button'></div>
+                <div class = 'button'></div>
+                <div class = 'button'></div>
+        </div>
+    </div>
+
+    
+    <div class = 'iosSlider2'>
+        <div class = 'slider'>
+        
+            <div class = 'item' id = 'calc_keys'>
+                <div class="ui-grid-c">
+                    <div class="ui-block-a"><p class=labelnobgnd>Log</p>      <a id="btnEnter"  data-role="button" data-mini="true" data-inline="false">ENTER</a></div>
+                    <div class="ui-block-b"><p class=labelnobgnd>Load</p>     <a id="btnEditor" data-role="button" data-mini="true" data-inline="false">Edit</a></div>     
+                    <div class="ui-block-c"><p class=labelnobgnd>Options</p>  <a id="btnCustom" data-role="button" data-mini="true" data-inline="false">Keys</a></div>     
+                    <div class="ui-block-d"><p class=labelnobgnd>Clear</p>    <a id="btnXx"     data-role="button" data-mini="true" data-inline="false">&#x21D0;</a></div>     
+                </div>
+                <div class="ui-grid-d">
+                    <div class="ui-block-a"><p class=yellowbutton>&#8201;&thinsp;</p> <a id="btnYellow"  data-role="button" data-mini="true" data-inline="false" data-theme="e">&#8201;&thinsp;</a></div>
+                    <div class="ui-block-b"><p>&#8201;&thinsp;</p> <a id="btn7"      data-role="button" data-mini="true" data-inline="false">7</a></div>     
+                    <div class="ui-block-c"><p>&#8201;&thinsp;</p> <a id="btn8"      data-role="button" data-mini="true" data-inline="false">8</a></div>     
+                    <div class="ui-block-d"><p>&#8201;&thinsp;</p> <a id="btn9"      data-role="button" data-mini="true" data-inline="false">9</a></div>     
+                    <div class="ui-block-e"><p>&#8201;&thinsp;</p> <a id="btnDivide" data-role="button" data-mini="true" data-inline="false">/</a></div>     
+                    
+                    <div class="ui-block-a"><p class=labelnobgnd>Rot</p>  <a id="btnUp"    data-role="button" data-mini="true" data-inline="false">&uarr;</a></div>
+                    <div class="ui-block-b"><p>&#8201;&thinsp;</p>        <a id="btn4"     data-role="button" data-mini="true" data-inline="false">4</a></div>     
+                    <div class="ui-block-c"><p>&#8201;&thinsp;</p>        <a id="btn5"     data-role="button" data-mini="true" data-inline="false">5</a></div>     
+                    <div class="ui-block-d"><p>&#8201;&thinsp;</p>        <a id="btn6"     data-role="button" data-mini="true" data-inline="false">6</a></div>     
+                    <div class="ui-block-e"><p>&#8201;&thinsp;</p>        <a id="btnTimes" data-role="button" data-mini="true" data-inline="false">*</a></div>     
+
+                    <div class="ui-block-a"><p class=labelnobgnd>Dup</p>  <a id="btnDown"     data-role="button" data-mini="true" data-inline="false">&darr;</a></div>     
+                    <div class="ui-block-b"><p>&#8201;&thinsp;</p>        <a id="btn1"        data-role="button" data-mini="true" data-inline="false">1</a></div>     
+                    <div class="ui-block-c"><p>&#8201;&thinsp;</p>        <a id="btn2"        data-role="button" data-mini="true" data-inline="false">2</a></div>     
+                    <div class="ui-block-d"><p>&#8201;&thinsp;</p>        <a id="btn3"        data-role="button" data-mini="true" data-inline="false">3</a></div>     
+                    <div class="ui-block-e"><p>&#8201;&thinsp;</p>        <a id="btnSubtract" data-role="button" data-mini="true" data-inline="false">-</a></div>     
+
+                    <div class="ui-block-a"><p class=labelnobgnd>Drop</p>             <a id="btnXY"     data-role="button" data-mini="true" data-inline="false">x&lsaquo;&rsaquo;y</a></div>     
+                    <div class="ui-block-b"><p class=labelnobgnd>Last X</p>           <a id="btn0"      data-role="button" data-mini="true" data-inline="false">0</a></div>     
+                    <div class="ui-block-c"><p class=labelnobgnd>Print</p>            <a id="btnPeriod" data-role="button" data-mini="true" data-inline="false">.</a></div>     
+                    <div class="ui-block-d"><p class=labelnobgnd>Help</p>             <a id="btnRS"     data-role="button" data-mini="true" data-inline="false">R/S</a></div>     
+                    <div class="ui-block-e"><p class=labelnobgnd>Catalog</p>          <a id="btnAdd"    data-role="button" data-mini="true" data-inline="false">+</a></div>     
+                </div>
+            </div>
+
+            <div class = 'item' id = 'calc_log2'>
+                
+                <a data-role="button" id="btnExitLog2" data-mini=true data-inline=true data-icon=back>Back</a>
+                <!--<span style="float:right">--><label style="font-size:0.7em;">Log 2:</label><!--</span>-->
+                <textarea name="textarea" id="log2"></textarea>
+            </div>
+
+        </div>
+    </div>
+
+       
+  </div> 
+</div> 
+
+
+
+<div data-role="page" id="MultiPageEditorKeys"> 
+    <div  data-role="header">
+        <a href="#p0" data-icon="back" data-transition="none">Back</a>
+        <h1>Key Assignments</h1>
+    </div>
+    
+    <div  data-role="content">
+        <a id="btnReparse" data-role="button" data-inline=true data-mini="true" data-theme="b">Re-Parse</a>
+        <div data-role="collapsible-set" data-mini="true">
+          
+            <div id="cb_p1" data-role="collapsible" data-collapsed="false">
+                <h3>Custom Buttons Page 1</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                    <!--<input type="checkbox" id="checkbox-mini-110" data-mini="true" /> <label for="checkbox-mini-110">example checkbox</label>-->
+                    <!--<input type="checkbox" id="checkbox-mini-111" data-mini="true" /> <label for="checkbox-mini-111">example checkbox 2</label>-->
+                </fieldset>
+            </div>
+            
+            <div id="cb_p2" data-role="collapsible" data-collapsed="true">
+                <h3>Custom Buttons Page 2</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                </fieldset>
+            </div>
+            
+            <div id="cb_p3" data-role="collapsible" data-collapsed="true">
+                <h3>Custom Buttons Page 3</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                </fieldset>
+            </div>
+
+            <div id="cb_p4" data-role="collapsible" data-collapsed="true">
+                <h3>Custom Buttons Page 4</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                </fieldset>
+            </div>
+
+            <div id="cb_p5" data-role="collapsible" data-collapsed="true">
+                <h3>Custom Shifted Keys 7 8 9 /</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                </fieldset>
+            </div>
+            
+            <div id="cb_p6" data-role="collapsible" data-collapsed="true">
+                <h3>Custom Shifted Keys 4 5 6 *</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                </fieldset>
+            </div>
+
+            <div id="cb_p7" data-role="collapsible" data-collapsed="true">
+                <h3>Custom Shifted Keys 1 2 3 -</h3>
+                <fieldset data-role="controlgroup" class="custom-cb">
+                </fieldset>
+            </div>
+            
+        </div>
+
+        <textarea id="code" name="code" data-role="none">
+        </textarea>        
+    </div>
+
+    <div data-role="footer" data-id="foo1" data-position="fixed">		
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#MultiPageEditorKeys" class="ui-btn-active ui-state-persist">Keys</a></li>
+                <li><a href="#MultiPageEditorEdit">Edit</a></li>
+                <li><a href="#MultiPageEditorOpen">Open...</a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div><!-- /footer -->
+</div> 
+
+<div data-role="page" id="MultiPageEditorEdit"> 
+    <div  data-role="header">
+        <a id="edit_cancel" data-icon="delete">Cancel</a>
+        <h1>Script Editor</h1>
+        <a class=savescript data-icon="check" data-theme="b">Save</a>
+    </div>
+    
+    <div  data-role="content">
+        <a id="edit_addfunction" data-role="button" data-inline=true data-icon="plus" data-mini="true" data-theme="a">Add Function</a>
+        <a id="edit_addvar" data-role="button" data-inline=true data-icon="plus" data-mini="true" data-theme="a">Add Variable</a>
+        <a id="edit_addclass" data-role="button" data-inline=true data-icon="plus" data-mini="true" data-theme="a">Add Class</a>
+        <a id="edit_tidy" data-role="button" data-inline=true data-icon="plus" data-mini="true" data-theme="b">Tidy</a>
+
+
+        <textarea id="code3" name="code3" style="font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;">
+        </textarea>
+    </div>
+
+    <div data-role="footer" data-id="foo1" data-position="fixed">		
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#MultiPageEditorKeys">Keys</a></li>
+                <li><a href="#MultiPageEditorEdit" class="ui-btn-active ui-state-persist">Edit</a></li>
+                <li><a href="#MultiPageEditorOpen">Open...</a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div><!-- /footer -->
+</div> 
+
+<div data-role="page" id="MultiPageEditorOpen"> 
+    <div  data-role="header">
+        <a href="#p0" data-icon="delete">Cancel</a>
+        <h1>Script Load/Import</h1>
+        <a href="#p0" data-icon="check" data-theme="b">Save</a>
+    </div>
+    
+    <div  data-role="content">
+        Current script file loaded is: <b><span id="current_title"></span></b>
+        <ul id="directoryList" data-role="listview" data-inset="true">
+          <li><a>Sample Script 1</a></li>
+          <li><a>Audi</a></li>
+          <li><a>BMW</a></li>          
+        </ul>
+    </div>
+
+    <div data-role="footer" data-id="foo1" data-position="fixed">		
+        <div data-role="navbar">
+            <ul>
+                <li><a href="#MultiPageEditorKeys">Keys</a></li>
+                <li><a href="#MultiPageEditorEdit">Edit</a></li>
+                <li><a href="#MultiPageEditorOpen" class="ui-btn-active ui-state-persist">Open...</a></li>
+            </ul>
+        </div><!-- /navbar -->
+    </div><!-- /footer -->
+</div>
+
+<div data-role="page" id="AppOptions"> 
+    <div  data-role="header">
+        <a href="#p0" data-icon="back">Back</a>
+        <h1>Application Options</h1>
+    </div>
+    
+    <div  data-role="content">
+        <h2>Persistence:</h2>
+        <div data-role="fieldcontain">
+          <a id=btnInitSampleScripts data-role="button" data-inline=true data-icon="check" data-theme="b">Init Sample Scripts</a>
+        </div>
+        
+        <h2>View:</h2>
+        <i>Syntax highlighted view.</i>
+        <div data-role="fieldcontain">
+            <label for="flip-mini">Word Wrap:</label>
+            <select name="flip-mini" id="flip-mini" data-role="slider" data-mini="true">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </select>
+        </div>
+        <div data-role="fieldcontain">
+            <label for="flip-mini2">Line Numbers:</label>
+            <select name="flip-mini2" id="flip-mini2" data-role="slider" data-mini="true">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </select>
+        </div>
+
+        <h2>Editor:</h2>
+        <div data-role="fieldcontain">
+            <label for="flip-mini3">Word Wrap:</label>
+            <select name="flip-mini3" id="flip-mini3" data-role="slider" data-mini="true">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+            </select>
+        </div>
+    </div>
+
+</div>
+
+<div data-role="page" id="AppHelp"> 
+    <div  data-role="header">
+        <a href="#p0" data-icon="back">Back</a>
+        <h1>Help</h1>
+    </div>
+    
+    <div  data-role="content">
+
+        <p>
+          Quick navigate to
+          <a href="#JavascriptReference">Javascript Language Reference</a>
+        </p>
+
+        <h2>Introduction</h2>
+        
+        <p>
+          Jsrpn calc is a programmable calculator which uses Javascript as its
+          programming language.  Assign javascript functions to buttons.
+        </p>
+
+        <p>
+          Jsrpn calc pays respect to classic HP calculators of the past by adopting
+          a stack based, RPN (Reverse Polish Notation) mode of operation.  And it
+          has that big ENTER key too.
+        </p>
+          
+        <p>
+          Call Javascript functions by pushing the parameters onto the stack
+          and then pressing the custom button with the function name.  Paramters
+          are popped off the stack and return values (if any) are pushed onto the
+          stack.
+        </p>
+          
+        <p>
+          The stack can contain numbers, strings, arrays, objects.
+        </p>
+          
+        <p>
+          Jsrpn calc has a html canvas you can draw on.  Its the RPN calculator
+          you've been waiting for your whole life.  Old school meets cutting edge
+          new school.
+        </p>
+          
+        <p>
+          The flexibility of a stack based environment means you can play with
+          values on the stack, feed one value into a javascript function and then feed its result
+          into another javascript function.  The stack becomes a playground and productive workspace,
+          just like in the old HP days.
+        </p>
+
+        <h2>Custom buttons</h2>
+        
+        <p>
+          Edit your script but to make custom buttons appear you need to go
+          into the "custom keys" view and check the checkboxes next to the
+          javascript functions you want to expose as buttons.
+        </p>
+          
+        <p>
+          These can take the form of custom buttons on the swipeable carousel (4
+          pages max), or as shifted keys on the numbers 1..9 and the / * and -
+          operators.
+        </p>
+
+        <h2>FAQ</h2>
+
+        <p>
+          Here are some tips for using Jsrpncalc.
+        </p>
+        
+        <ul>
+          <li><b>R/S</b> repeats the last custom user function invoked.</li>
+          <li><b>The log view</b> (or print view) is available in the stack area (swipe stack left to see it) or under the main keyboard (Shift ENTER to see it).</li>
+          <li><b>Swipe the custom button area</b> to see four screens worth of custom buttons.</li>
+          <li><b>To create custom buttons</b> edit or load a script, then use the keys page to checkbox the functions you want exposed as buttons.</li>
+        </ul>
+
+        <h2>Javascript</h2>
+        
+          <p>
+          The language you program with is plain javascript.  No keystroke programming, just
+          modern state of the art javascript.  See <a href="#JavascriptReference">Javascript Language Reference</a>
+          </p>
+          
+          <h3>How Parameters are suplied to your Javascript functions</h3>          
+          <p>
+            Parameters to javascript functions are taken from the stack, so remember to
+            push on the appropriate number of parameters BEFORE invoking your function.
+            Thus if you used the <a href="#MultiPageEditorEdit">Script Editor</a>
+            to type in the following function:
+            <pre>
+function myadd(a,b) {return a+b;} </pre>then after exposing this function
+            as a custom button using the
+            <a href="#MultiPageEditorKeys">Custom Keys</a> page, in order to
+            actually use/invoke this function, you need use the main calculator
+            interface and simply type
+            <pre>
+1
+ENTER
+2
+myadd </pre> (where myadd is a custom button)
+          </p>
+
+          <h3>Returning values from your custom Javascript functions</h3>          
+          <p>
+            Your script can return values using the normal
+            <pre>
+return </pre> keyword.  Or you can access the
+            stack directly with the rpn object and push things on e.g.
+            <pre>
+rpn.pusher(100); </pre>
+          </p>
+
+          <h3>Canvas drawing</h3>          
+          <p>
+            You can draw to the built in canvas.
+          </p>
+
+
+    </div>
+
+</div>
+
+<div data-role="page" id="JavascriptReference"> 
+    <div  data-role="header">
+        <a href="#p0" data-icon="back">Back</a>
+        <h1>Javascript Reference</h1>
+    </div>
+    
+    <div  data-role="content">
+
+        From <a href="http://javascript-reference.info/">http://javascript-reference.info/</a> 
+    
+        <div data-role="collapsible-set">
+          
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsNumber</h3>
+              <p>I'm the collapsible set content for jsNumber.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsNumber.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsString</h3>
+              <p>I'm the collapsible set content for jsString.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsString.gif">
+            </div>
+
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsNumberString</h3>
+              <p>I'm the collapsible set content for jsNumberString.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsNumberString.gif">
+            </div>
+
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsBoolean</h3>
+              <p>I'm the collapsible set content for jsBoolean.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsBoolean.gif">
+            </div>
+
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsDate</h3>
+              <p>I'm the collapsible set content for section 3.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsDate.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsMath</h3>
+              <p>I'm the collapsible set content for jsMath.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsMath.gif">
+            </div>
+
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsArray</h3>
+              <p>I'm the collapsible set content for jsArray.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsArray.gif">
+            </div>
+
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsFunction</h3>
+              <p>I'm the collapsible set content for jsFunction.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsFunction.gif">
+            </div>
+
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsLogic</h3>
+              <p>I'm the collapsible set content for jsLogic.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsLogic.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsObject</h3>
+              <p>I'm the collapsible set content for jsObject.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsObject.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsType</h3>
+              <p>I'm the collapsible set content for jsType.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsType.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsOOP</h3>
+              <p>I'm the collapsible set content for jsOOP.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsOOP.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>jsError</h3>
+              <p>I'm the collapsible set content for jsError.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsError.gif">
+            </div>
+            
+            <div data-role="collapsible" data-collapsed="true">
+              <h3>Legend</h3>
+              <p>I'm the collapsible set content for jsLegend.</p>
+              <img src="http://javascript-reference.info/JavaScript-Reference-Dateien/jsLegend.gif">
+            </div>
+            
+        </div>
+    
+    
+    </div>
+
+</div>
+
+<div id=EditorTemplates style="display:none">
+  <div id="EditorAddClassTemplate">
+function UntitledClass() {
+    var someVar = "";
+    
+    // Private Methods ------------------------
+
+    function priv1() {
+    }
+
+    // Public Methods -------------------------
+
+    function pub1(a) {
+        priv1();
+        someVar = a;
+    }
+
+    function pub2(a) {
+        return someVar + 1;
+    }
+
+    // Return interface -----------------------
+
+    return {
+        pub1: pub1,
+        dosomething: pub2
+    }
+};
+  </div>
+</div>
+
+
+<div id=SampleScripts style="display:none">
+  <div data-title="Sample Script 1">
+function findSequence(goal) {
+  if (goal == "z")
+    alert("zzz");
+  else
+    alert(55);
+}
+
+// Built in global objects are log(s) and rpn
+
+function add(a,b) { return a+b; }
+function say_hi() { return "hi"; }
+function say_hi2() { console.log(rpn); rpn.pusher(1000); }
+function logloop1(n) { for (i=1;i<=n;i++) { log(i); } }
+function randy1() {rpn.pusher(Math.random());}
+function lenarray(lzt) {rpn.pusher(lzt.length);}
+function gen(n) { var arra=[]; for (i=1;i<=n;i++) { arra.push(i); }  rpn.pusher(arra);}
+function gen5() { gen(5); }
+  </div>
+  <div data-title="Sample Script 2">
+// Canvas demos from
+// http://www.concept-it.ch/projects/web/blueSparrow/demo8.html
+
+function demo1() {
+    // Get canvas element
+    var canvas = document.getElementById("myCanvas");
+    
+    // Initialize new canvas manager (show outline, don't show FPS)
+    var canvasManager = new blueSparrow.CanvasManager(canvas, true, false);
+     
+    // Make a new sprite with tag 's1' at 300, 200 with dimensions
+    // of 100 by 100, and having no image attached
+    var sprite1 = new blueSparrow.Sprite("s1", 30, 20, 50, 50, null);
+    
+    // Define a custom drawing function using fill color, stroke color,
+    // stroke width, fill opacity and stroke opacity
+    sprite1.customDraw = function() {
+        this.drawRectangleOutline("#0000cc", "#000000", 6, 0.8, 1);
+    };
+    
+    // Set the rotation of the sprite
+    sprite1.rotation = 30;
+    
+    // Add the sprite to the canvas manager
+    canvasManager.addSprite(sprite1);
+    
+    // Tell the canvas manager to draw its sprite hierarchy
+    canvasManager.draw();
+}
+function demo8() {
+    // Make image objects
+    var sparrow = new Image();
+    sparrow.src = "images/blueSparrowLogo128.png";
+    var number = new Image();
+    number.src = "images/number.png";
+    
+    // Initialize canvas manager
+    var canvas = document.getElementById("myCanvas");   
+    var canvasManager = new blueSparrow.CanvasManager(canvas, true, true);
+    
+    // Make a rotating square sprite using a custom drawing function
+    // The square is UI enabled
+    var square = new blueSparrow.Sprite("square", 300, 200, 300, 300, null);
+    square.setZOrder(1);
+    square.rotation = 0;
+    square.scale = 0.75;
+    square.customDraw = function() {
+        this.drawRectangleOutline("#cccccc", "#000000", 2, 0.8, 1);
+    };
+    square.addAction(new blueSparrow.Action("rotation", 360, 30,
+        blueSparrow.easingFunction("linear"), blueSparrow.ACTION_REPEAT));
+    square.uiEnabled = true;
+    square.draggable = true;
+    square.scheduled = true;   
+    canvasManager.addSprite(square);
+    
+    // Add children to the square
+    var N = 50, i, sprite;
+    for (i = 0; i < N; i++) {
+        sprite = new blueSparrow.Sprite("number-" + i, 150, 150, 32, 32, number);
+        sprite.setSpeed(Math.round(Math.random() * 100) + 10);
+        sprite.setDirection(Math.round(Math.random() * 360));
+        sprite.scheduled = true;
+        sprite.bounceOffParent = true;
+        sprite.availableImageFrames = 10;
+        sprite.imageFrameInterval = 0.5 + Math.random() * 2;
+        square.addChild(sprite);
+    }
+    var sparrow = new blueSparrow.Sprite("sparrow", 100, 100, 128, 128, sparrow);
+    sparrow.addAction(new blueSparrow.Action("rotation", -360, 15,
+        blueSparrow.easingFunction("linear"), blueSparrow.ACTION_REPEAT));
+    sparrow.scheduled = true;
+    sparrow.opacity = 0.8;
+    square.addChild(sparrow);
+
+    // Initialize and start scheduler
+    var scheduler = new blueSparrow.Scheduler(canvasManager, 60);
+    scheduler.start();
+}
+  </div>
+  <div data-title="Current">
+function add(a,b) { return a+b; }    
+  </div>
+  <div data-title="New">
+  </div>
+</div>
+
+<script type="application/javascript">
+
+$('#p0').live('pageshow',function(){
+    //console.log($('current'));
+});
+
+//$('#MultiPageEditorOptions').live('pageshow',function(){
+$('#MultiPageEditorOptions').live('pagebeforeshow',function(){
+//$('#MultiPageEditorOptions').live('pagecreate',function(){
+//$('#MultiPageEditorOptions').live('pagebeforechange',function(){
+
+    // Initialise options
+    //var myswitch = $("#flip-mini3");
+    //myswitch[0].selectedIndex = 1;
+    //myswitch.slider("refresh");
+    
+    // Prefetch so going back is fast.
+    //$.mobile.loadPage( pageUrl, { showLoadMsg: false } );
+});
+
+$('#MultiPageEditorKeys').live('pageshow',function(){
+//$('#MultiPageEditorKeys').live('pagebeforeshow',function(){
+    $('.CodeMirror').each(function(i, el){ el.CodeMirror.refresh(); });  // make CodeMirror build the dom required, which it hasn't done yet for some reason
+    
+    //console.log('QQQ', $('.CodeMirror span'));
+    
+    //$('.CodeMirror span').addClass('needsclick');  // bypass fastclick intefering with CodeMirror
+    //
+    //  $('.CodeMirror span').addClass('needsclick');  // bypass fastclick intefering with CodeMirror
+    //
+    //  $('.CodeMirror').on("blur", function(instance) {
+    //    console.log('blur');
+    //    $(editor).find('span').addClass('needsclick');
+    //});
+    //
+    //  addClass('needsclick');  // bypass fastclick intefering with CodeMirror
+
+
+    /*
+     * Code Mirror 3 has the .on blur event stuff I need.  But it breaks the scrolling autosizing
+     * In addition, copy/paste is fighting with iOS and can't get back the cursor sometimes.  All a bit tricky.
+     * 
+    $('.CodeMirror').each(function(i, el){
+      console.log(el);
+      $(el).addClass('needsclick');
+      $(el).find('textarea').addClass('needsclick');
+      $(el).find('div,pre,span').addClass('needsclick');
+    });
+  
+    $('.CodeMirror').each(function(i, el){
+      console.log('POST ', el);
+      //el.CodeMirror.on("focus", function(instance) {console.log('focus');});
+      //el.CodeMirror.on("blur", function(instance) {console.log('blur');});
+      //el.CodeMirror.on("change", function(instance, changeObj) {console.log('change', instance);});
+      //el.CodeMirror.on("update", function(instance) {console.log('update', instance);});
+  
+      el.CodeMirror.on("blur", function(instance) {
+          console.log('blur');
+          //$(el).find('div,pre,span').addClass('needsclick');
+          $(el).find('div,pre,span').addClass('needsclick');
+          console.log('BLUR SPANS', $('.CodeMirror div,pre,span'));
+      });
+     
+    });
+    
+    */  
+  
+});
+  
+  
+$(document).ready(function() {
+    $('.iosSlider0').iosSlider({
+        scrollbar: false,
+        snapToChildren: true,
+        desktopClickDrag: true,
+        infiniteSlider: true, 
+        navSlideSelector: $('.iosSliderButtons0 .button'),
+        onSlideChange: slideContentChange0,
+        onSliderLoaded: slideContentChange0,
+        keyboardControls: true
+    });
+    
+    $('.iosSlider').iosSlider({
+        scrollbar: true,   // are we actually using this?
+        snapToChildren: true,
+        desktopClickDrag: true,
+        infiniteSlider: true, 
+        navSlideSelector: $('.iosSliderButtons .button'),
+        scrollbarHeight: '2',
+        scrollbarBorderRadius: '0',
+        scrollbarOpacity: '0.5',
+        onSlideChange: slideContentChange,
+        onSliderLoaded: slideContentChange,
+        keyboardControls: true
+    });
+
+    $('.iosSlider2').iosSlider({
+        snapToChildren: true,
+        desktopClickDrag: true,
+        infiniteSlider: false, 
+        keyboardControls: true
+    });
+    
+    function slideContentChange0(args) {
+        /* indicator */
+        // Normally the algorithm would be args.currentSlideNumber - 1 to determine index of indicator .button div to highlight, when going left to right
+        // but I have floated them from the right growing to the left, so the logic is revered thus.
+        var num_indicators = $('div[class="iosSlider0"]').find('div[class="iosSliderButtons0"]').children().length;
+        $('.iosSliderButtons0 .button').removeClass('selected');
+        $('.iosSliderButtons0 .button:eq(' + (num_indicators - args.currentSlideNumber) + ')').addClass('selected');
+    }
+    function slideContentChange(args) {
+        /* indicator */
+        $('.iosSliderButtons .button').removeClass('selected');
+        $('.iosSliderButtons .button:eq(' + (args.currentSlideNumber - 1) + ')').addClass('selected');
+    }
+                                
+    // Locks the keyboard slider. Temporarily disabling touch/drag events within the slider without unbinding them.
+    // But it does disable key bindings when applied after my other calc key binding have been hooked.  So only lock once then leave it.
+    $('.iosSlider2').iosSlider('lock');
+    
+    // Remove search icon from input text field.  Keep the nice X icon though.  http://stackoverflow.com/questions/12239901/text-inputs-with-x-icon-to-clear-the-field-once-you-start-typing            
+    $('input[type="text"]').parent('div').removeClass('ui-icon-searchfield'); // .css('background', '#F0F0F0');
+
+    // listview sortable demo
+    // DISABLE because mixing sortable with jquery mobile checkbox buttons causes artifacts.
+    //
+    //$( ".sortable" ).sortable();
+    //$( ".sortable" ).disableSelection();
+    
+    
+    
+    var editor = new Behave({
+    
+        textarea: 		$('textarea#code3')[0],
+        replaceTab: 	true,
+        softTabs: 		true,
+        tabSize: 		4,
+        autoOpen: 		true,
+        overwrite: 		true,
+        autoStrip: 		true,
+        autoIndent: 	true
+    });
+            
+});
+</script>
+
+
+<script type="application/javascript">
+    var prevent_page_scroll = true;
+    
+    // Prevent page scrolling
+    // more ideas here https://forum.jquery.com/topic/how-to-disable-scroll-on-page
+    if (prevent_page_scroll) {
+        $(document).delegate('#p0 .ui-content', 'touchmove', false);  // http://stackoverflow.com/questions/9982567/jquery-mobile-disable-page-content-vertical-scroll
+        $(document).delegate('#log1', 'touchmove', true); // keep log textarea scrolling - almost.
+        $(document).delegate('#log2', 'touchmove', true); // keep log textarea scrolling - almost.
+        $(document).delegate('#rpnstack2', 'touchmove', true);
+    }
+    
+</script>
+
+
+
+
+<script type="application/javascript">
+
+</script>
+
+</body>
+</html>

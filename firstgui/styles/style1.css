@@ -1,0 +1,79 @@
+#rpnstack2 {
+    width:370px;
+    height: 4em;
+    margin-left: 2px;
+    overflow: scroll;
+    overflow-x: hidden;
+}
+
+.cmd_input {
+    width:350px;
+    border: 0 none white;
+    overflow: auto; /* hidden; */
+    margin-left: 15px;
+    padding-left: 5px;
+    outline: none;
+    background-color: #808040;
+    color: #09B53D;
+    font-weight:700;
+    /* resize: none; */
+    text-align:left;
+    display:block;
+}
+input.cmd_input { font-size:1.2em; 
+    color: white ;
+    border-top: dotted; border-width:2px; border-color:grey;}
+
+/*.topcalc {background:beige; width:350px;z-index:-1;}*/
+#rpnstack2 li {background:beige; padding-right:2px; }
+
+#rpnstack2 li:hover span {background-color: white;}
+#rpnstack2 li:hover span.type {background-color: olive;display:inline;float:right;}
+
+/*ul#rpnstack2*/ li span.stack_val_type {
+    display:none;
+    padding-left:3px; 
+    padding-right:3px;
+}
+/*#rpnstack2 */ ul li:hover span.stack_val_type {
+    background-color: olive;
+    display:inline;
+    float:right;
+}
+
+#rpnstack2 li span.stack_comment {
+    font: 12 Verdana;
+    color:blue;
+    text-align: right;
+    padding-left: 20px;
+    width: 10px;
+    float:right;
+}
+
+.toggler { font-size:0.7em; background:#b35900; border:none;}
+
+/*******************************************/
+
+h1              { font-size: 2em; margin: .67em 0 }
+h2              { font-size: 1.5em; margin: .75em 0 0 0 }
+h3              { font-size: 1.17em; margin: .83em 0 }
+ol, p, ul, center,
+dir, hr, menu, pre   { display: block; unicode-bidi: embed }
+li              { display: list-item }
+
+.draggablenow { background-color: LightGreen; } 
+div#div_buttons {margin-left: 15px; background:#FAD3A9; width:265px;}
+.f_button {
+    font-size: 0.8em;
+    padding: 4px;
+    margin-left: 4px;
+    margin-top: 4px;
+    margin-right: 7px;
+    margin-bottom: 5px;
+}
+
+div.CodeMirror-scroll { height: auto!important; overflow: visible; }
+
+
+
+ 

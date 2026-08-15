@@ -1,0 +1,283 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    
+    
+  <!-- allow fullscreen web-app on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <!-- scale this app to fill the available width on supported devices -->
+  <meta name="viewport" content="minimum-scale=0.1, maximum-scale=2.0, width=device-width, user-scalable=no">
+  <!-- Icon (Retina) -->
+  <link rel="apple-touch-icon" sizes="144x144" href="assets/jsrpncalc1.png">
+
+  <title>Javascript RPN Calculator by Andy</title>
+  
+  <!-- jQuery -->
+  <script type='text/javascript' src='../scripts/other/jquery-1.7.2.min.js'></script>
+  
+  <!-- jQuery UI - styles not included since I have my own. -->
+  <!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.0/themes/base/jquery-ui.css" /> -->
+  <script type="text/javascript" src="../scripts/other/jquery-ui.1.8.18.min.js"></script>
+  
+  <!-- jQuery UI Touch Punch - http://touchpunch.furf.com/
+      Is a small hack that enables the use of touch
+      events on sites using the jQuery UI user interface library.
+      Andy Note: This is used for the drag drop stack rearrange, 
+      -->
+  <script type='text/javascript' src="../scripts/other/jquery.ui.touch-punch.js"></script>
+
+  <!-- ANDY css styles -->
+  <link rel="stylesheet" type="text/css" href="styles/normalize.css">
+  <link rel="stylesheet" type="text/css" href="styles/style1.css">
+  
+  <!-- jQuery JSON - not already included in Jquery?  Have to include this special one? -->
+  <script type='text/javascript' src="../scripts/other/jquery.json.min.js"></script>
+  
+  <!-- jScrollPane
+  A jquery plugin which allows you to replace the browsers
+  default vertical scrollbars on any block level element with an overflow:auto style.
+  You can easily control the apperance of the custom scrollbars using simple CSS.
+  http://www.kelvinluck.com/assets/jquery/jScrollPane/jScrollPane.html
+  -->
+  <script type='text/javascript' src="../scripts/other/jquery.jscrollpane.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="../scripts/other/jquery.jscrollpane.css">
+    
+  <!--  If the mouse wheel plugin is included in the page then the scroll panes will
+  respond to mouse wheel events as well.  -->
+  <script type='text/javascript' src="../scripts/other/jquery.mousewheel.js"></script>
+
+  <!-- ANDY -->
+  <script type='text/javascript' src="../scripts/rpnstack.js"></script>
+  <script type='text/javascript' src="../scripts/jsparser.js"></script>
+  
+  <!-- Javascript parsing -->
+  <script type='text/javascript' src="../scripts/other/esprima.js"></script>
+  
+  <!-- Syntax Highlighting -->
+  <!-- ver 2.3 -->
+  <script type='text/javascript' src="../scripts/other/codemirror-2.34/codemirror.js"></script>
+  <link rel="stylesheet" type="text/css" href="../scripts/other/codemirror-2.34/codemirror.css">
+  <script type='text/javascript' src="../scripts/other/codemirror-2.34/codemirror.javascript.js"></script>
+  
+  <!-- Util -->
+  <script type='text/javascript' src="../scripts/other/underscore-min.js"></script>
+  
+  <!-- Canvas graphics library -->
+  <script type='text/javascript' src="../scripts/other/blueSparrow.js"></script>
+  
+  <!-- ANDY -->
+  <script type='text/javascript' src="scripts/main.js"></script>
+
+</head>
+<body>
+
+<button id="rpn_buttons" class="toggler">View Stack</button>
+<div id="rpn_buttons">
+<div>Stack Drag to Rearrange: <input id="stack_design_mode" type="checkbox" value="bbb" /> (edit)</div>
+
+  <div class="topcalc">
+    <ul id="rpnstack2">
+    </ul>
+    <input id="current" class="cmd_input" type="text" value="78"></<input>    
+  </div>
+
+  <button id="btn_push2">Push</button>
+  <button id="btn_pop2">Pop</button>
+  <button id="btn_rolldown2">RDN</button>
+  <button id="btn_rollup2">RUP</button>
+  <button id="btn_swap2">X&lt;&gt;Y</button>
+  <button id="btn_dup2">Dup</button>    
+  <button id="btn_push2_array">Push Array</button>
+
+</div>    
+
+<button id="canvas1" class="toggler">View Canvas</button>
+<div id="canvas1">
+  <canvas id="myCanvas" width="300" height="200"></canvas>
+</div>    
+
+<button id="log1" class="toggler">View Log</button>
+<div id="log1" style="word-wrap: break-word">
+  Log
+</div>    
+
+<HR>
+  
+<button id="rpn_script" class="toggler">View Script</button>
+<div id="rpn_script">
+
+Stack based Javascript Calc. <INPUT type="button" value="Parse" id="btn_parse" />
+<textarea id="code" name="code">
+function findSequence(goal) {
+  if (goal == "z")
+    alert("zzz");
+  else
+    alert(55);
+}
+function add(a,b) { return a+b; }
+function say_hi() { return "hi"; }
+function say_hi2() { console.log(rpn); rpnpush(1000); }
+function randy1() {rpnpush(Math.random());}
+function lenarray(lzt) {rpnpush(lzt.length);}
+function gen(n) { var arra=[]; for (i=1;i<=n;i++) { arra.push(i); }  rpnpush(arra);}
+function gen5() { gen(5); }
+
+// Canvas demos from
+// http://www.concept-it.ch/projects/web/blueSparrow/demo8.html
+
+function demo1() {
+    // Get canvas element
+    var canvas = document.getElementById("myCanvas");
+    
+    // Initialize new canvas manager (show outline, don't show FPS)
+    var canvasManager = new blueSparrow.CanvasManager(canvas, true, false);
+     
+    // Make a new sprite with tag 's1' at 300, 200 with dimensions
+    // of 100 by 100, and having no image attached
+    var sprite1 = new blueSparrow.Sprite("s1", 30, 20, 50, 50, null);
+    
+    // Define a custom drawing function using fill color, stroke color,
+    // stroke width, fill opacity and stroke opacity
+    sprite1.customDraw = function() {
+        this.drawRectangleOutline("#0000cc", "#000000", 6, 0.8, 1);
+    };
+    
+    // Set the rotation of the sprite
+    sprite1.rotation = 30;
+    
+    // Add the sprite to the canvas manager
+    canvasManager.addSprite(sprite1);
+    
+    // Tell the canvas manager to draw its sprite hierarchy
+    canvasManager.draw();
+}
+function demo8() {
+    // Make image objects
+    var sparrow = new Image();
+    sparrow.src = "../images/blueSparrowLogo128.png";
+    var number = new Image();
+    number.src = "../images/number.png";
+    
+    // Initialize canvas manager
+    var canvas = document.getElementById("myCanvas");   
+    var canvasManager = new blueSparrow.CanvasManager(canvas, true, true);
+    
+    // Make a rotating square sprite using a custom drawing function
+    // The square is UI enabled
+    var square = new blueSparrow.Sprite("square", 300, 200, 300, 300, null);
+    square.setZOrder(1);
+    square.rotation = 0;
+    square.scale = 0.75;
+    square.customDraw = function() {
+        this.drawRectangleOutline("#cccccc", "#000000", 2, 0.8, 1);
+    };
+    square.addAction(new blueSparrow.Action("rotation", 360, 30,
+        blueSparrow.easingFunction("linear"), blueSparrow.ACTION_REPEAT));
+    square.uiEnabled = true;
+    square.draggable = true;
+    square.scheduled = true;   
+    canvasManager.addSprite(square);
+    
+    // Add children to the square
+    var N = 50, i, sprite;
+    for (i = 0; i < N; i++) {
+        sprite = new blueSparrow.Sprite("number-" + i, 150, 150, 32, 32, number);
+        sprite.setSpeed(Math.round(Math.random() * 100) + 10);
+        sprite.setDirection(Math.round(Math.random() * 360));
+        sprite.scheduled = true;
+        sprite.bounceOffParent = true;
+        sprite.availableImageFrames = 10;
+        sprite.imageFrameInterval = 0.5 + Math.random() * 2;
+        square.addChild(sprite);
+    }
+    var sparrow = new blueSparrow.Sprite("sparrow", 100, 100, 128, 128, sparrow);
+    sparrow.addAction(new blueSparrow.Action("rotation", -360, 15,
+        blueSparrow.easingFunction("linear"), blueSparrow.ACTION_REPEAT));
+    sparrow.scheduled = true;
+    sparrow.opacity = 0.8;
+    square.addChild(sparrow);
+
+    // Initialize and start scheduler
+    var scheduler = new blueSparrow.Scheduler(canvasManager, 60);
+    scheduler.start();
+}
+</textarea>
+
+</div>    
+
+<div id="html_out">
+</div>
+<div id="history">
+</div>
+
+<button id="rpn_custom_buttons" class="toggler">View Custom Buttons</button>
+<div id="rpn_custom_buttons">
+
+Custom Buttons: <input id="design_mode" type="checkbox" value="aaa" /> (edit)
+<div id="div_buttons">
+</div>
+
+</div>
+
+<button id="rpn_regular_keyboard" class="toggler">View Regular Keyboard</button>
+<div id="rpn_regular_keyboard">
+
+Regular Keyboard:    
+<div id="built_in_buttons">
+<FORM NAME="Calc">    
+<TABLE BORDER=4>
+<TR>
+<TD>
+<INPUT TYPE="text"   NAME="Input" Size="16">
+<br>
+</TD>
+</TR>
+<TR>
+<TD>
+<INPUT TYPE="button" NAME="one"   VALUE="  1  " OnClick="Calc.Input.value += '1'">
+<INPUT TYPE="button" NAME="two"   VALUE="  2  " OnCLick="Calc.Input.value += '2'">
+<INPUT TYPE="button" NAME="three" VALUE="  3  " OnClick="Calc.Input.value += '3'">
+<INPUT TYPE="button" NAME="plus"  VALUE="  +  " OnClick="Calc.Input.value += ' + '">
+<br>
+<INPUT TYPE="button" NAME="four"  VALUE="  4  " OnClick="Calc.Input.value += '4'">
+<INPUT TYPE="button" NAME="five"  VALUE="  5  " OnCLick="Calc.Input.value += '5'">
+<INPUT TYPE="button" NAME="six"   VALUE="  6  " OnClick="Calc.Input.value += '6'">
+<INPUT TYPE="button" NAME="minus" VALUE="  -  " OnClick="Calc.Input.value += ' - '">
+<br>
+<INPUT TYPE="button" NAME="seven" VALUE="  7  " OnClick="Calc.Input.value += '7'">
+<INPUT TYPE="button" NAME="eight" VALUE="  8  " OnCLick="Calc.Input.value += '8'">
+<INPUT TYPE="button" NAME="nine"  VALUE="  9  " OnClick="Calc.Input.value += '9'">
+<INPUT TYPE="button" NAME="times" VALUE="  x  " OnClick="Calc.Input.value += ' * '">
+<br>
+<INPUT TYPE="button" NAME="clear" VALUE="  c  " OnClick="Calc.Input.value = ''">
+<INPUT TYPE="button" NAME="zero"  VALUE="  0  " OnClick="Calc.Input.value += '0'">
+<INPUT TYPE="button" NAME="DoIt"  VALUE="  =  " OnClick="Calc.Input.value = eval(Calc.Input.value)">
+<INPUT TYPE="button" NAME="div"   VALUE="  /  " OnClick="Calc.Input.value += ' / '">
+<br>
+</TD>
+</TR>
+</TABLE>
+</FORM>
+</div>
+
+</div>
+
+<button id="rpn_parsing_results" class="toggler">View Parsing Results</button>
+<div id="rpn_parsing_results">
+
+<div id="log">
+    <h2>Here are the parsing results:</h2>
+    <div id="out"></div>
+    <ul id="ul_function_names"></ul>
+</div>
+
+</div>
+  
+  
+</body>
+
+
+</html>
+
